@@ -1,0 +1,23 @@
+:root {
+  --main-c-dark: rgb(28, 34, 56);
+  --text-c-dark: rgb(238, 238, 238);
+
+  --main-c-light: rgb(238, 238, 238);
+  --text-c-light: rgb(28, 34, 56);
+}
+
+/**
+ * Dark mode 深色模式
+ */
+body.dark-mode {
+  --color-background: var(--main-c-dark);
+  --color-text: var(--text-c-dark);
+}
+
+/**
+ * Light mode 浅色模式
+ */
+body.light-mode {
+  --color-background: var(--main-c-light);
+  --color-text: var(--text-c-light);
+}

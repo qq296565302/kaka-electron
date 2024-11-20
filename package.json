@@ -1,0 +1,36 @@
+{
+  "name": "touchword_electron",
+  "private": false,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.13",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.8.6",
+    "kaka-api-service": "^1.1.8",
+    "kaka-axios": "^1.0.0",
+    "kaka-localstorage": "^1.0.2",
+    "lodash": "^4.17.21",
+    "pinia": "^2.2.4",
+    "postcss": "^8.4.49",
+    "postcss-px-conversion": "^0.1.3",
+    "sass": "^1.80.3",
+    "sass-loader": "^16.0.3",
+    "vue": "^3.5.10",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "vite": "^5.4.8",
+    "electron": "^33.2.0"
+  }
+}
