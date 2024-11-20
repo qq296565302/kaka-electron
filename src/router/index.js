@@ -6,15 +6,7 @@ import utils from '../utils/index'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
-  },
-  {
-    path: '/login',
-    name: 'login',
-    meta: {
-      title: '登录'
-    },
-    component: () => import('../views/PageLogin.vue')
+    redirect: '/home'
   },
   {
     path: '/home',

@@ -1,5 +1,4 @@
 @import "./variables.scss"; // 全局变量
-@import "./components/HeaderBar.scss"; // 标题栏
 
 body,
 html,
@@ -30,6 +29,7 @@ html,
 .PMZD {
   font-family: PMZD;
 }
+
 ._drag {
   -webkit-app-region: drag;
 }

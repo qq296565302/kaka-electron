@@ -1,8 +1,5 @@
 <template>
-	<div class="Page-Home _drag">
-		<!-- 侧边栏 -->
-		<SideBar />
-	</div>
+	<div class="Page-Home _drag"></div>
 </template>
 
 <script setup>
@@ -11,20 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 const { proxy } = getCurrentInstance()
 
-/**
- * 引入的组件
- * SideBar 侧边栏
- */
-import SideBar from './SideBar.vue'
-
-const data = reactive({
-	result: '',
-})
-
-const load = async () => {
-	const result = await window.electronAPI.loadBook('CET4_1')
-	data.result = result.code
-}
+const data = reactive({})
 
 onBeforeMount(() => {})
 onMounted(() => {})
