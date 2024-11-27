@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { dirname, resolve } from "path";
-import postcsspxconversion from "postcss-px-conversion";
 
 
 export default ({ mode }) => {
@@ -19,17 +18,6 @@ export default ({ mode }) => {
     css: {
       postcss: {
         plugins: [
-          postcsspxconversion({
-            unitType: "px", // 要从哪种单位转换（默认为'px'）
-            viewportWidth: 1920,
-            enablePerFileConfig: true, // 启用per-file配置
-            viewportWidthComment: "viewport-width", // 用于指定视口宽度的注释
-            selectorBlacklist: [
-              "Component-HeaderBar",
-              ".Component-SiderBar",
-              "layout-height",
-            ], // 要忽略的选择器（字符串或正则表达式）
-          }),
         ],
       },
       // css预处理器

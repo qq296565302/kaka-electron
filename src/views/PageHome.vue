@@ -1,8 +1,12 @@
 <template>
 	<div class="Page-Home _drag">
 		<!-- CLS 数据 -->
-		<div class="cls-container _no-drag">
-			<div class="cls-item" v-for="item in data.cls" :key="item['发布时间']">
+		<div class="cls-container">
+			<p class="lastUpdated PingFang _drag">
+				<span>最后更新时间：{{ data.lastUpdated }}</span>
+				<span class="update _no-drag" @click="requestCollection.getClsData()">手动更新</span>
+			</p>
+			<div class="cls-item PingFang _no-drag" v-for="item in data.cls" :key="item['发布时间']">
 				<div class="cls-item-title" v-if="item['标题']">{{ item['标题'] }}</div>
 				<div class="cls-item-content">{{ item['内容'] }}</div>
 			</div>
@@ -29,6 +33,7 @@ API_Service.registerApi(pageName, {
 /**
  * 请求集合
  */
+import dayjs from 'dayjs'
 const requestCollection = {
 	// 获取实时数据
 	getRealData: async () => {
@@ -44,11 +49,12 @@ const requestCollection = {
 		const result = await crud.launch(() => {
 			return API_Service.fetch(pageName, type, 'cls')
 		})
+		data.lastUpdated = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss')
 		data.cls = result.data
-		console.log(data.cls[0])
 	},
 }
 const data = reactive({
+	lastUpdated: '', // 最后更新时间
 	cls: [],
 })
 
@@ -65,30 +71,45 @@ defineExpose({
 	box-sizing: border-box;
 	height: 100%;
 	overflow: auto;
-	padding: 50px;
+	padding: 30px;
 	width: 100%;
+	.lastUpdated {
+		color: #919191;
+		display: flex;
+		font-size: 12px;
+		height: 40px;
+		justify-content: space-between;
+		line-height: 40px;
+		.update {
+			cursor: pointer;
+		}
+	}
 	&::-webkit-scrollbar {
 		display: none;
 	}
 	.cls-item {
 		background-color: #dddddd;
 		box-sizing: border-box;
-		border-radius: 20px;
+		border-radius: 10px;
 		color: #131313;
-		margin-bottom: 40px;
-		opacity: 0.3;
-		padding: 40px;
+		margin-bottom: 30px;
+		opacity: 0.8;
+		padding: 20px;
 		&:hover {
+			box-shadow: 0 0 10px #666666;
 			opacity: 1;
 		}
 		.cls-item-title {
 			border-bottom: 1px dashed #131313;
 			font-weight: bold;
-			padding-bottom: 30px;
+			line-height: 1.8;
+			padding-bottom: 20px;
 		}
 		.cls-item-content {
 			line-height: 1.8;
-			padding: 30px 0;
+			text-indent: 2em;
+			text-align: justify;
+			padding: 20px 0;
 		}
 	}
 }

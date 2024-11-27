@@ -29,7 +29,13 @@ html,
 .PMZD {
   font-family: PMZD;
 }
-
+@font-face {
+  font-family: PingFang;
+  src: url("../font/PINGFANG.OTF");
+}
+.PingFang {
+  font-family: PingFang;
+}
 ._drag {
   -webkit-app-region: drag;
 }
