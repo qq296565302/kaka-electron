@@ -17,6 +17,7 @@
     "dayjs": "^1.11.13",
     "echarts": "^5.5.1",
     "element-plus": "^2.8.6",
+    "html2canvas": "^1.4.1",
     "kaka-api-service": "^1.1.8",
     "kaka-axios": "^1.0.0",
     "kaka-localstorage": "^1.0.2",

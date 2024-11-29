@@ -39,7 +39,7 @@ app.whenReady().then(() => {
   /**
    * ipc 进程通信 (双向)
    */
-  ipcMain.handle('load-book', ipcHandler.IPC_LoadBook)
+  ipcMain.handle('copy-image-to-clipboard', ipcHandler.IPC_copyImageToClipboard)
 })
 
 app.on('window-all-closed', () => {
