@@ -32,6 +32,7 @@
 					<div class="content">
 						<div class="posters-title PingFang" v-if="data.posterData['标题']">{{ data.posterData['标题'] }}</div>
 						<div class="posters-content PingFang">{{ data.posterData['内容'] }}</div>
+						<div class="posters-tip PingFang">投资有风险，入市需谨慎。</div>
 					</div>
 				</div>
 			</div>
@@ -276,6 +277,11 @@ defineExpose({
 					text-indent: 2em;
 					text-align: justify;
 					padding: 20px 0;
+				}
+				.posters-tip {
+					color: #757575;
+					font-size: 12px;
+					margin: 10px 0;
 				}
 			}
 		}

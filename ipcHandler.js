@@ -4,7 +4,7 @@ const path = require('path')
 
 
 /**
- * 加载单词本
+ * 将图片写入剪贴板
  * @param {Event} event
  * @param {base64} dataURL 图片的dataURL
 */
