@@ -19,6 +19,11 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
+import importAllSVG from './assets/svg/importAllSVG' // svg 图标导出，全局引入
+import cmpsvg from './components/svg.cmp.vue'// SVG 组件
+app.component('cmpsvg', cmpsvg) // 注册 SVG 组件
+app.config.globalProperties.svgIcon = importAllSVG // svg 图标导出挂载全局
+
 /* 引入 kaka-axios 网络请求 */
 import kakaAxios from './request/kaka-axios'
 const request = kakaAxios('/api')
