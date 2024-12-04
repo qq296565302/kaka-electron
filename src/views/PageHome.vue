@@ -1,7 +1,12 @@
 <template>
-	<div class="Page-Home _drag">
-		<cmpsvg :use="svgIcon.logo" />
-		<Cls />
+	<div class="Page-Home">
+		<div class="container">
+			<Cls />
+		</div>
+		<div class="navBar _no-drag">
+			<cmpsvg :use="svgIcon.BN_information" class="nav-item" :class="{ active: data.tabIndex === 0 }" @click="data.tabIndex = 1" />
+			<cmpsvg :use="svgIcon.BN_stock" class="nav-item" :class="{ active: data.tabIndex === 1 }" @click="data.tabIndex = 0" />
+		</div>
 	</div>
 </template>
 
@@ -23,6 +28,7 @@ API_Service.registerApi(pageName, {
 		default: (data) => request.get(`/finance/realTimeQuotes`, data),
 	},
 })
+
 /**
  * 请求集合
  */
@@ -38,11 +44,38 @@ const requestCollection = {
 		console.log({ result })
 	},
 }
-const data = reactive({})
+const data = reactive({
+	tabIndex: 0,
+})
 
 onMounted(() => {})
 defineExpose({
 	...toRefs(data),
 })
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.Page-Home {
+	.container {
+		height: calc(100% - 80px);
+		width: 100%;
+	}
+	.navBar {
+		align-items: center;
+		background-color: rgb(23, 46, 73);
+		display: flex;
+		height: 80px;
+		justify-content: space-around;
+		position: relative;
+		width: 100%;
+		z-index: 5;
+		.nav-item {
+			height: 36px;
+			width: 36px !important;
+			filter: grayscale(80);
+			&.active {
+				filter: grayscale(0);
+			}
+		}
+	}
+}
+</style>

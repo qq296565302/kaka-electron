@@ -11,7 +11,7 @@
 			<p class="posters" @click="handlePosters(item)">生成分享海报</p>
 		</div>
 		<!-- 回到顶部 -->
-		<div class="back-to-top" @click="handleBackToTop" v-if="clsBackToTop">
+		<div class="back-to-top _no-drag" @click="handleBackToTop" v-if="clsBackToTop">
 			<el-icon class="icon"><Top /></el-icon>
 		</div>
 	</div>
@@ -176,7 +176,7 @@ defineExpose({
 	.back-to-top {
 		background-color: rgba(255, 255, 255, 0.6);
 		border-radius: 100%;
-		bottom: 20px;
+		bottom: 120px;
 		cursor: pointer;
 		color: rgba(0, 6, 32, 1);
 		font-size: 32px;
