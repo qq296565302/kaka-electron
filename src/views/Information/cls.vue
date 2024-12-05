@@ -67,12 +67,14 @@ const requestCollection = {
 		})
 		data.lastUpdated = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss')
 		data.cls = result.data
+		data.count = result.count
 	},
 }
 
 const data = reactive({
 	lastUpdated: '', // 最后更新时间
 	cls: [],
+	count: 0,
 	posterData: {},
 })
 
