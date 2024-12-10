@@ -47,17 +47,28 @@ function drawChart() {
   // Clear the canvas
   ctx.clearRect(0, 0, width, height);
 
+  // Create gradient
+  const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
+  gradient.addColorStop(0, 'rgba(255, 0, 0, 0)'); // Start with fully transparent
+  gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0)'); // Start with fully transparent
+  gradient.addColorStop(1, 'rgba(255, 0, 0, 0.1)'); // End with 0.3 opacity red
+
+  // Fill rectangle with gradient
+  ctx.fillStyle = gradient;
+  ctx.fillRect(padding, padding, width - 2 * padding, height - 2 * padding);
+
   // Draw axes
-  ctx.setLineDash([15, 0]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 0.3;
+  ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(76, 122, 197,1)';
   ctx.beginPath();
-  ctx.moveTo(padding, padding);
-  ctx.lineTo(padding, height - padding);
-  ctx.lineTo(width - padding, height - padding);
+  ctx.moveTo(padding, height / 2);
+  ctx.lineTo(width - padding, height /2);
   ctx.stroke();
   ctx.setLineDash([]); // Reset line dash to solid for future drawings
 
   // Draw price trend
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(padding, height - padding - (prices[0] - priceLimit.min) / (priceLimit.max - priceLimit.min) * (height - 2 * padding));
   for (let i = 1; i < prices.length; i++) {
