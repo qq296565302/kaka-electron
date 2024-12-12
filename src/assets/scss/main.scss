@@ -36,6 +36,14 @@ html,
 .PingFang {
   font-family: PingFang;
 }
+@font-face {
+  font-family: LCD;
+  src: url("../font/LcdD.ttf");
+}
+.LCD {
+  font-family: LCD;
+}
+
 ._drag {
   -webkit-app-region: drag;
 }

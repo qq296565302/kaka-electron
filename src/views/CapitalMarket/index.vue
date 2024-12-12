@@ -1,5 +1,6 @@
 <template>
   <div>
+    <span class="LCD" style="color: red;">300444  +5.6% 8.66</span>
     <canvas id="priceChart" width="250" height="120"></canvas>
   </div>
 </template>
