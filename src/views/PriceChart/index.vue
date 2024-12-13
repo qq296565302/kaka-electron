@@ -1,5 +1,5 @@
 <template>
-    <canvas :id="options.id" :width="options.width" :height="options.height"></canvas>
+    <canvas :id="mergedOptions.id" :width="mergedOptions.width" :height="mergedOptions.height"></canvas>
 </template>
 
 <script setup>
@@ -9,39 +9,47 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const proxy = getCurrentInstance()?.proxy;
-const data = reactive({})
 
-defineProps({
+/**
+ * * id: canvas id
+ * * width: canvas width
+ * * height: canvas height
+ * * min: min price
+ * * max: max price
+ * * start: start price
+ * * padding: padding
+ */
+const defaultOptions = {
+    id: 'priceChart',
+    width: 180,
+    height: 70,
+    min: -20,
+    max: 20,
+    start: 0,
+    padding: 20
+};
+
+const props = defineProps({
     options: {
         type: Object,
-        /**
-         * * id: canvas id
-         * * width: canvas width
-         * * height: canvas height
-         * * min: min price
-         * * max: max price
-         * * start: start price
-         * * padding: padding
-         */
-        default: () => ({
-            id: 'priceChart',
-            width: 250,
-            height: 120,
-            min: -10,
-            max: 10,
-            start: 0,
-            padding: 20
-        })
+        default: () => { }
     },
     prices: {
         type: Array,
-        default: () => []
+        default: () => [0]
     }
 })
 
+const mergedOptions = reactive({
+    ...defaultOptions,
+    ...props.options
+})
+
+
+
 const generateCanvasColor = (lastPrice) => {
-    const lineColor = lastPrice > 0 ? 'rgb(0, 255, 0)' : 'rgb(255, 0, 0)';
-    const backgroundColor = lastPrice > 0 ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)';
+    const lineColor = lastPrice < 0 ? 'rgb(0, 255, 0)' : 'rgb(255, 0, 0)';
+    const backgroundColor = lastPrice < 0 ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)';
     return {
         lineColor,
         backgroundColor
@@ -49,6 +57,8 @@ const generateCanvasColor = (lastPrice) => {
 }
 
 const drawChart = (canvasId, prices, priceLimit, width, height, padding) => {
+    const [lastPrice] = prices.slice(-1);
+    const { lineColor, backgroundColor } = generateCanvasColor(lastPrice);
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
 
@@ -57,9 +67,9 @@ const drawChart = (canvasId, prices, priceLimit, width, height, padding) => {
 
     // 创建渐变
     const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
-    gradient.addColorStop(0, 'rgba(255, 0, 0, 0)'); // 从完全透明开始
-    gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0)'); // 从完全透明开始
-    gradient.addColorStop(1, 'rgba(255, 0, 0, 0.1)'); // 结束时0.1不透明度的红色
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)'); // 从完全透明开始
+    gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0)'); // 从完全透明开始
+    gradient.addColorStop(1, backgroundColor); // 结束时0.1不透明度的红色
 
     // 用渐变填充矩形
     ctx.fillStyle = gradient;
@@ -84,30 +94,28 @@ const drawChart = (canvasId, prices, priceLimit, width, height, padding) => {
         const y = height - padding - (prices[i] - priceLimit.min) / (priceLimit.max - priceLimit.min) * (height - 2 * padding);
         ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = 'red';
+    ctx.strokeStyle = lineColor;
     ctx.stroke();
 }
 
 const updateDrawChart = () => {
-    const {
-        id,
-        width,
-        height,
-        min,
-        max,
-        start,
-        padding
-    } = data.options;
-
-    drawChart(id, data.prices, data.priceLimit, width, height, padding);
-
+    const { id, width, height, padding, min, max, start } = mergedOptions
+    const prices = props.prices
+    drawChart(id, prices, { min, max }, width, height, padding)
 }
+
+watch(() => props.prices, () => {
+    updateDrawChart()
+}, { deep: true })
+
 onBeforeMount(() => {
 })
 onMounted(() => {
+    updateDrawChart()
 })
 defineExpose({
-    ...toRefs(data)
+    ...toRefs(mergedOptions),
+    updateDrawChart
 })
 
 </script>
