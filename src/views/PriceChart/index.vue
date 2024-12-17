@@ -21,7 +21,7 @@ const proxy = getCurrentInstance()?.proxy;
  */
 const defaultOptions = {
     id: 'priceChart',
-    width: 180,
+    width:200,
     height: 70,
     min: -20,
     max: 20,
