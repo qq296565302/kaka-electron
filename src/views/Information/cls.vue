@@ -7,7 +7,7 @@
     </p>
     <div class="cls-item PingFang _no-drag" v-for="item in data.cls" :key="item['发布时间']">
       <div class="cls-item-title" v-if="item['标题']">{{ item["标题"] }}</div>
-      <div class="cls-item-content">{{ item["内容"] }}</div>
+      <div class="cls-item-content" @dblclick="copyText(item['内容'])">{{ item["内容"] }}</div>
       <p class="posters" @click="handlePosters(item)">生成分享海报</p>
     </div>
     <!-- 回到顶部 -->
@@ -125,6 +125,17 @@ const copyPosterHandler = async () => {
 // 关闭海报
 const closePostersHandler = () => {
   createPoster.value = false;
+};
+
+// 复制文本内容
+const copyText = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    proxy.$message.success('已复制到剪贴板');
+  } catch (err) {
+    console.error('复制失败:', err);
+    proxy.$message.error('复制失败');
+  }
 };
 
 onBeforeMount(async () => {
