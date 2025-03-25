@@ -47,7 +47,7 @@ const requestCollection = {
 	},
 }
 const data = reactive({
-	tabIndex: 1,
+	tabIndex: 0,
 })
 
 onMounted(() => {})
