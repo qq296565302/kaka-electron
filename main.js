@@ -15,8 +15,8 @@ require('electron-reload')(__dirname, {
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 455,
-    height: 655,
+    width: 1440,
+    height: 800,
     frame: false,
     opacity: 1,
     resizable: false, // 禁止改变主窗口尺寸
