@@ -3,7 +3,7 @@
     <div class="cls-container" ref="clsContainer" @scroll="handleClsScroll">
         <p class="lastUpdated PingFang">
             <span>最后更新时间：{{ data.lastUpdated }}</span>
-            <span class="update" @click="requestCollection.getClsData()">刷新</span>
+            <span class="update" @click="RequestCollection.getClsData()">刷新</span>
         </p>
         <div class="cls-item PingFang" v-for="item in data.cls" :key="item['发布时间']">
             <div class="cls-item-content" @dblclick="copyText(item['内容'])">{{ item["内容"] }}</div>
