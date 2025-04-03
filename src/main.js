@@ -24,15 +24,18 @@ import cmpsvg from './components/svg.cmp.vue'// SVG 组件
 app.component('cmpsvg', cmpsvg) // 注册 SVG 组件
 app.config.globalProperties.svgIcon = importAllSVG // svg 图标导出挂载全局
 
-/* 引入 kaka-axios 网络请求 */
 import kakaAxios from './request/kaka-axios'
 const request = kakaAxios('/api')
+import * as utils from "./utils/index";
+import kakaLocalStorage from "kaka-localstorage";
+import API_Service from "kaka-api-service";
+import CRUD from "./utils/crud";
 
-app.config.globalProperties.request = request;
-
-/* 引入 kaka-localstorage 本地存储 */
-import kakaLocalStorage from 'kaka-localstorage'
-app.config.globalProperties.storage = kakaLocalStorage;
+app.config.globalProperties.Utils = utils;
+app.config.globalProperties.Storage = kakaLocalStorage;
+app.config.globalProperties.Service = API_Service;
+app.config.globalProperties.CRUD = CRUD;
+app.config.globalProperties.Request = request;
 
 /* 引入 pinia 状态管理 */
 import { createPinia } from 'pinia'

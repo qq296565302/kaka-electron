@@ -70,7 +70,7 @@ importers:
         specifier: ^5.1.4
         version: 5.2.3(vite@5.4.16(@types/node@20.17.30)(sass@1.86.1))(vue@3.5.13)
       electron:
-        specifier: ^33.2.0
+        specifier: ^33.4.8
         version: 33.4.8
       electron-reload:
         specifier: ^2.0.0-alpha.1
