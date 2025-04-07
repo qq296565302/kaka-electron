@@ -9,7 +9,7 @@ const instances = {};
 export const createWebSocketService = (instanceId = 'default') => {
   // 如果已存在该实例，直接返回
   if (instances[instanceId]) {
-    console.log(`复用已存在的WebSocket实例: ${instanceId}`);
+    logMessage('info', `复用已存在的WebSocket实例: ${instanceId}`);
     return instances[instanceId];
   }
 
@@ -44,6 +44,35 @@ export const createWebSocketService = (instanceId = 'default') => {
   };
 
   /**
+   * 记录日志的辅助函数
+   * @param {string} level - 日志级别 (info, warn, error)
+   * @param {string} message - 日志消息
+   * @param {object} data - 额外数据
+   */
+  const logMessage = (level, message, data = null) => {
+    // 首先使用控制台记录
+    if (level === 'info') {
+      console.log(message, data || '');
+    } else if (level === 'warn') {
+      console.warn(message, data || '');
+    } else if (level === 'error') {
+      console.error(message, data || '');
+    }
+    
+    // 如果有日志API，同时记录到文件
+    if (window.electronAPI && window.electronAPI.log) {
+      const source = `WebSocket:${instanceId}`;
+      if (level === 'info') {
+        window.electronAPI.log.info(source, message, data);
+      } else if (level === 'warn') {
+        window.electronAPI.log.warn(source, message, data);
+      } else if (level === 'error') {
+        window.electronAPI.log.error(source, message, data);
+      }
+    }
+  };
+
+  /**
    * 计算重连延迟时间（指数退避策略）
    * @returns {number} - 延迟时间（毫秒）
    */
@@ -53,7 +82,7 @@ export const createWebSocketService = (instanceId = 'default') => {
       reconnectConfig.baseDelay * Math.pow(2, reconnectConfig.count) + Math.random() * 1000,
       reconnectConfig.maxDelay
     );
-    console.log(`[WebSocket:${instanceId}] 重连延迟: ${delay}ms, 当前重连次数: ${reconnectConfig.count}`);
+    logMessage('info', `[WebSocket:${instanceId}] 重连延迟: ${delay}ms, 当前重连次数: ${reconnectConfig.count}`);
     return delay;
   };
 
@@ -66,7 +95,7 @@ export const createWebSocketService = (instanceId = 'default') => {
     }
 
     try {
-      console.log(`[WebSocket:${instanceId}] 建立连接: ${currentUrl}`);
+      logMessage('info', `[WebSocket:${instanceId}] 建立连接: ${currentUrl}`);
       socket.value = new WebSocket(currentUrl);
       
       // 设置事件处理
@@ -74,8 +103,8 @@ export const createWebSocketService = (instanceId = 'default') => {
       socket.value.onmessage = handleMessage;
       socket.value.onerror = handleError;
       socket.value.onclose = handleClose;
-    } catch (error) {
-      console.error(`[WebSocket:${instanceId}] 连接创建失败:`, error);
+    } catch (error) { 
+      logMessage('error', `[WebSocket:${instanceId}] 连接创建失败:`, error);
       attemptReconnect();
     }
   };
@@ -84,7 +113,7 @@ export const createWebSocketService = (instanceId = 'default') => {
    * 连接打开处理
    */
   const handleOpen = () => {
-    console.log(`[WebSocket:${instanceId}] 连接成功`);
+    logMessage('info', `[WebSocket:${instanceId}] 连接成功`);
     // 连接成功后重置重连计数
     reconnectConfig.count = 0;
     
@@ -102,6 +131,15 @@ export const createWebSocketService = (instanceId = 'default') => {
     // 收到消息后重置心跳丢失计数
     heartbeatConfig.loseCount = 0;
     
+    // 记录收到的消息（不是心跳消息时）
+    if (event.data !== heartbeatConfig.message) {
+      logMessage('info', `[WebSocket:${instanceId}] 收到消息:`, { 
+        messageType: typeof event.data, 
+        messageLength: event.data.length,
+        messagePreview: event.data.substring ? event.data.substring(0, 100) : event.data
+      });
+    }
+    
     // 如果设置了消息回调，则调用回调处理消息
     if (messageCallback) {
       messageCallback(event.data);
@@ -113,7 +151,7 @@ export const createWebSocketService = (instanceId = 'default') => {
    * @param {Event} event - 错误事件
    */
   const handleError = (event) => {
-    console.error(`[WebSocket:${instanceId}] 连接错误:`, event);
+    logMessage('error', `[WebSocket:${instanceId}] 连接错误:`, event);
     closeConnection();
     socket.value = null;
     attemptReconnect();
@@ -124,11 +162,15 @@ export const createWebSocketService = (instanceId = 'default') => {
    * @param {CloseEvent} event - 关闭事件
    */
   const handleClose = (event) => {
-    console.log(`[WebSocket:${instanceId}] 连接关闭:`, event);
+    logMessage('info', `[WebSocket:${instanceId}] 连接关闭:`, {
+      code: event.code,
+      reason: event.reason,
+      wasClean: event.wasClean
+    });
     
     // 如果不是正常关闭，尝试重连
     if (!event.wasClean) {
-      console.log(`[WebSocket:${instanceId}] 连接非正常关闭，尝试重连`);
+      logMessage('warn', `[WebSocket:${instanceId}] 连接非正常关闭，尝试重连`);
       socket.value = null;
       attemptReconnect();
     }
@@ -140,23 +182,23 @@ export const createWebSocketService = (instanceId = 'default') => {
   const attemptReconnect = () => {
     // 如果组件已销毁，不再尝试重连
     if (reconnectConfig.isDestroyed) {
-      console.log(`[WebSocket:${instanceId}] 组件已销毁，取消重连`);
+      logMessage('info', `[WebSocket:${instanceId}] 组件已销毁，取消重连`);
       return;
     }
     
     if (reconnectConfig.count >= reconnectConfig.maxAttempts) {
-      console.log(`[WebSocket:${instanceId}] 达到最大重连次数(${reconnectConfig.maxAttempts})，停止重连`);
+      logMessage('warn', `[WebSocket:${instanceId}] 达到最大重连次数(${reconnectConfig.maxAttempts})，停止重连`);
       return;
     }
     
     reconnectConfig.count++;
     const delay = getReconnectDelay();
     
-    console.log(`[WebSocket:${instanceId}] 连接失败，${delay}ms后第${reconnectConfig.count}次重连...`);
+    logMessage('info', `[WebSocket:${instanceId}] 连接失败，${delay}ms后第${reconnectConfig.count}次重连...`);
     reconnectConfig.timer = setTimeout(() => {
       // 再次检查组件是否已销毁
       if (reconnectConfig.isDestroyed) {
-        console.log(`[WebSocket:${instanceId}] 组件已销毁，取消执行重连`);
+        logMessage('info', `[WebSocket:${instanceId}] 组件已销毁，取消执行重连`);
         return;
       }
       createConnection();
@@ -171,7 +213,7 @@ export const createWebSocketService = (instanceId = 'default') => {
     
     // 如果组件已销毁，不再启动心跳
     if (reconnectConfig.isDestroyed) {
-      console.log(`[WebSocket:${instanceId}] 组件已销毁，不启动心跳`);
+      logMessage('info', `[WebSocket:${instanceId}] 组件已销毁，不启动心跳`);
       return;
     }
     
@@ -182,7 +224,7 @@ export const createWebSocketService = (instanceId = 'default') => {
     heartbeatTimer = setInterval(() => {
       // 检查组件是否已销毁
       if (reconnectConfig.isDestroyed) {
-        console.log(`[WebSocket:${instanceId}] 组件已销毁，停止心跳`);
+        logMessage('info', `[WebSocket:${instanceId}] 组件已销毁，停止心跳`);
         stopHeartbeat();
         return;
       }
@@ -201,7 +243,7 @@ export const createWebSocketService = (instanceId = 'default') => {
       
       // 如果心跳丢失次数达到限制，尝试重连
       if (heartbeatConfig.loseCount >= heartbeatConfig.loseLimit) {
-        console.log(`[WebSocket:${instanceId}] 心跳丢失(${heartbeatConfig.loseCount}次)，尝试重连`);
+        logMessage('warn', `[WebSocket:${instanceId}] 心跳丢失(${heartbeatConfig.loseCount}次)，尝试重连`);
         stopHeartbeat();
         socket.value = null;
         attemptReconnect();
@@ -227,10 +269,10 @@ export const createWebSocketService = (instanceId = 'default') => {
     
     if (socket.value) {
       try {
-        console.log(`[WebSocket:${instanceId}] 关闭连接`);
+        logMessage('info', `[WebSocket:${instanceId}] 关闭连接`);
         socket.value.close();
       } catch (error) {
-        console.error(`[WebSocket:${instanceId}] 关闭连接错误:`, error);
+        logMessage('error', `[WebSocket:${instanceId}] 关闭连接错误:`, error);
       } finally {
         socket.value = null;
       }
@@ -244,15 +286,23 @@ export const createWebSocketService = (instanceId = 'default') => {
    */
   const sendMessage = (message) => {
     if (!socket.value || socket.value.readyState !== WebSocket.OPEN) {
-      console.warn(`[WebSocket:${instanceId}] 连接未打开，无法发送消息`);
+      logMessage('warn', `[WebSocket:${instanceId}] 连接未打开，无法发送消息`);
       return false;
     }
     
     try {
       socket.value.send(message);
+      // 只记录非心跳消息
+      if (message !== heartbeatConfig.message) {
+        logMessage('info', `[WebSocket:${instanceId}] 发送消息:`, { 
+          messageType: typeof message, 
+          messageLength: message.length,
+          messagePreview: message.substring ? message.substring(0, 100) : message
+        });
+      }
       return true;
     } catch (error) {
-      console.error(`[WebSocket:${instanceId}] 发送消息错误:`, error);
+      logMessage('error', `[WebSocket:${instanceId}] 发送消息错误:`, error);
       return false;
     }
   };
@@ -271,6 +321,8 @@ export const createWebSocketService = (instanceId = 'default') => {
     // 重置重连计数
     reconnectConfig.count = 0;
     
+    logMessage('info', `[WebSocket:${instanceId}] 初始化连接: ${url}`);
+    
     // 创建连接
     createConnection();
   };
@@ -281,10 +333,11 @@ export const createWebSocketService = (instanceId = 'default') => {
   const reconnect = () => {
     // 如果组件已销毁，不再重新连接
     if (reconnectConfig.isDestroyed) {
-      console.log(`[WebSocket:${instanceId}] 组件已销毁，取消手动重连`);
+      logMessage('info', `[WebSocket:${instanceId}] 组件已销毁，取消手动重连`);
       return;
     }
     
+    logMessage('info', `[WebSocket:${instanceId}] 手动触发重连`);
     closeConnection();
     socket.value = null;
     reconnectConfig.count = 0;
@@ -293,7 +346,7 @@ export const createWebSocketService = (instanceId = 'default') => {
 
   // 组件卸载前清理资源
   onBeforeUnmount(() => {
-    console.log(`[WebSocket:${instanceId}] 组件卸载，关闭连接`);
+    logMessage('info', `[WebSocket:${instanceId}] 组件卸载，关闭连接`);
     closeConnection();
     reconnectConfig.isDestroyed = true;
     if (reconnectConfig.timer) {
