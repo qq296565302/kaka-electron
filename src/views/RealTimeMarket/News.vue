@@ -17,9 +17,11 @@
 </template>
 
 <script setup>
+import { createWebSocketService } from "@/utils/websocketService";
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
+const ws = createWebSocketService('default');
 
 Service.registerApi(PAGE_NAME, {
     fetch: {
@@ -77,8 +79,14 @@ const copyText = async (text) => {
     }
 };
 
+// WebSocket 消息处理
+const getOrderMessage = (data) => {
+    console.log(data);
+};
+
 onBeforeMount(async () => {
     await RequestCollection.getClsData();
+    ws.connect(import.meta.env.VITE_WS_URL, getOrderMessage, true);
 });
 
 onMounted(() => {});
