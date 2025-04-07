@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-const { Service, Request, CRUD, Storage } = getCurrentInstance()?.proxy;
+const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
 
@@ -70,10 +70,10 @@ const handleBackToTop = async () => {
 const copyText = async (text) => {
     try {
         await navigator.clipboard.writeText(text);
-        proxy.$message.success("已复制到剪贴板");
+        $message.success("已复制到剪贴板");
     } catch (err) {
         console.error("复制失败:", err);
-        proxy.$message.error("复制失败");
+        $message.error("复制失败");
     }
 };
 
