@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { createWebSocketService } from "@/utils/websocketService";
+import { createWebSocketService, heartbeatConfig } from "@/utils/websocketService";
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
@@ -81,6 +81,7 @@ const copyText = async (text) => {
 
 // WebSocket 消息处理
 const getOrderMessage = (data) => {
+    console.log(heartbeatConfig);
     console.log(data);
 };
 
