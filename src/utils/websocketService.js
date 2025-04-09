@@ -19,29 +19,13 @@ export const heartbeatConfig = {
     message: "ping", // 心跳消息内容
     responseTimeout: 3000, // 添加心跳响应超时时间
 };
+
 /**
  * 创建WebSocket服务实例
  * @param {string} instanceId - 实例标识符
  * @returns {Object} - WebSocket服务实例
  */
 export const createWebSocketService = (instanceId = "default") => {
-    // 如果已存在该实例，直接返回
-    if (instances[instanceId]) {
-        logMessage("info", `复用已存在的WebSocket实例: ${instanceId}`);
-        return instances[instanceId];
-    }
-
-    // WebSocket连接实例
-    const socket = ref(null);
-    // 心跳定时器
-    let heartbeatTimer = null;
-    // 当前连接URL
-    let currentUrl = "";
-    // 消息回调函数
-    let messageCallback = null;
-    // 是否开启心跳检测
-    let enableHeartbeat = true;
-
     /**
      * 记录日志的辅助函数
      * @param {string} level - 日志级别 (info, warn, error)
@@ -70,6 +54,22 @@ export const createWebSocketService = (instanceId = "default") => {
             }
         }
     };
+    // 如果已存在该实例，直接返回
+    if (instances[instanceId]) {
+        logMessage("info", `复用已存在的WebSocket实例: ${instanceId}`);
+        return instances[instanceId];
+    }
+
+    // WebSocket连接实例
+    const socket = ref(null);
+    // 心跳定时器
+    let heartbeatTimer = null;
+    // 当前连接URL
+    let currentUrl = "";
+    // 消息回调函数
+    let messageCallback = null;
+    // 是否开启心跳检测
+    let enableHeartbeat = true;
 
     /**
      * 计算重连延迟时间（指数退避策略）

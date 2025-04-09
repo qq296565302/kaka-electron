@@ -8,7 +8,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "electron ."
+    "start": "electron . --icon=resources/icon16.ico"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

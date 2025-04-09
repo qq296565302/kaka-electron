@@ -18,6 +18,7 @@
 
 <script setup>
 import { createWebSocketService, heartbeatConfig } from "@/utils/websocketService";
+import { da } from "date-fns/locale";
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
@@ -80,9 +81,15 @@ const copyText = async (text) => {
 };
 
 // WebSocket 消息处理
-const getOrderMessage = (data) => {
-    console.log(heartbeatConfig);
-    console.log(data);
+const getOrderMessage = (msg) => {
+    // 忽略心跳消息
+    if (msg === heartbeatConfig.message) return;
+    // 处理接收到的消息
+    const receiveMessages = JSON.parse(msg);
+    if(receiveMessages.type === 'cls_news_update'){
+        data.cls = [...receiveMessages.data.newNews, ...data.cls];
+        data.lastUpdated = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    }
 };
 
 onBeforeMount(async () => {

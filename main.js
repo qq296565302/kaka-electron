@@ -86,8 +86,10 @@ const createWindow = () => {
     frame: false,
     opacity: 1,
     resizable: false, // 禁止改变主窗口尺寸
+    icon: path.resolve(__dirname, 'resources/icon16.ico'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: true
     }
   })
 
