@@ -105,9 +105,9 @@ defineExpose({
 <style scoped lang="scss">
 .cls-container {
     box-sizing: border-box;
-    height: 100%;
+    height: 90%;
     overflow: auto;
-    padding: 30px;
+    padding: 10px 30px;
     position: relative;
     width: 100%;
     .lastUpdated {
