@@ -18,11 +18,10 @@
 
 <script setup>
 import { createWebSocketService, heartbeatConfig } from "@/utils/websocketService";
-import { da } from "date-fns/locale";
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
-const ws = createWebSocketService('default');
+const ws = createWebSocketService('market');
 
 Service.registerApi(PAGE_NAME, {
     fetch: {

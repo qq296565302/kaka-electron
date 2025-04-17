@@ -1,6 +1,8 @@
 <template>
     <div class="RealTimeMarket">
-        <section class="market"></section>
+        <section class="market">
+            <el-alert class="alert" v-if="alertMessage" :title="alertMessage" :type="alertType" />
+        </section>
         <section class="news">
             <div class="radio-inputs">
                 <label class="radio">
@@ -20,9 +22,54 @@
 
 <script setup>
 import News from "./News.vue";
-import { ref } from 'vue';
-
-const newsType = ref('telegraph'); // 默认选中上市公司今日动态
+import { useTradeStore } from 'stores/trade'; // 状态管理 store
+import { getWebSocketService } from 'utils/websocketService'; // WebSocket 服务
+const tradeStore = useTradeStore(); // 获取交易状态 store
+const alertMessage = ref('');
+const alertType = ref('error');
+watch(() => tradeStore.tradeStatus, () => {
+    const statusName = tradeStore.tradeStatusName;
+    let alertText = '';
+    if(tradeStore.tradeStatus === '2'){
+        alertType.value = 'error';
+        alertText = `A股 ${statusName}，最后交易时间：${tradeStore.lastTradeTime}`;
+    }
+    if(tradeStore.tradeStatus === '1'){
+        alertType.value = 'success';
+        alertText = `A股 ${statusName}`;
+    }
+    if(tradeStore.tradeStatus === '0'){
+        alertType.value = 'error';
+        alertText = `A股 ${statusName}`;
+    }
+    alertMessage.value = alertText;
+    
+    // 获取 WebSocket 服务并发送状态变化消息
+    try {
+        const wsService = getWebSocketService('market');
+        if (wsService.getStatus() === 1) { // 1 表示 WebSocket.OPEN
+            // 构建状态变化消息
+            const statusMessage = JSON.stringify({
+                type: 'tradeStatusChange',
+                data: {
+                    status: tradeStore.tradeStatus,
+                    statusName: statusName,
+                    timestamp: Date.now(),
+                    lastTradeTime: tradeStore.lastTradeTime || null
+                }
+            });
+            
+            // 发送消息到服务端
+            wsService.sendMessage(statusMessage);
+            console.log('已发送交易状态变化消息到服务端');
+        } else {
+            console.warn('WebSocket 连接未打开，无法发送交易状态变化消息');
+        }
+    } catch (error) {
+        console.error('发送交易状态变化消息失败:', error);
+    }
+});
+const newsType = ref('telegraph');
 const newsTypes = {
   telegraph: '财联社电报',
   company: '上市公司今日动态'
@@ -37,7 +84,16 @@ defineExpose({});
 .RealTimeMarket {
     display: flex;
     .market {
+        position: relative;
         flex: 6;
+        .alert {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            border-radius: 0;
+        }
     }
     .news {
         flex: 3;
