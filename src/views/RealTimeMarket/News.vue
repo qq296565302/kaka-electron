@@ -17,11 +17,10 @@
 </template>
 
 <script setup>
-import { createWebSocketService, heartbeatConfig } from "@/utils/websocketService";
+import eventBus from "utils/eventBus";
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
 const PAGE_NAME = "News";
-const ws = createWebSocketService('market');
 
 Service.registerApi(PAGE_NAME, {
     fetch: {
@@ -52,13 +51,13 @@ const data = reactive({
     posterData: {},
 });
 
-// CLS 滚动事件 如果滑动距离大于 500px 显示回到顶部按钮，点击按钮，返回顶部
+// CLS 滚动事件 如果滑动距离大于 200px 显示回到顶部按钮，点击按钮，返回顶部
 const clsContainer = ref(null);
 const clsBackToTop = ref(false);
 const handleClsScroll = () => {
     if (clsContainer.value) {
         const scrollTop = clsContainer.value.scrollTop; // 获取滚动距离
-        clsBackToTop.value = scrollTop > 500;
+        clsBackToTop.value = scrollTop > 200;
     }
 };
 const handleBackToTop = async () => {
@@ -79,24 +78,33 @@ const copyText = async (text) => {
     }
 };
 
-// WebSocket 消息处理
-const getOrderMessage = (msg) => {
-    // 忽略心跳消息
-    if (msg === heartbeatConfig.message) return;
-    // 处理接收到的消息
-    const receiveMessages = JSON.parse(msg);
-    if(receiveMessages.type === 'cls_news_update'){
-        data.cls = [...receiveMessages.data.newNews, ...data.cls];
-        data.lastUpdated = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
-    }
+
+
+// 订阅WebSocket消息
+const subscribeToWebSocketMessages = () => {
+    // 订阅cls_news_update类型的消息
+    eventBus.on('cls_news_update', (messageData) => {
+        console.log('收到财联社消息更新:', messageData);
+        if (messageData && messageData.newNews) {
+            // 将新消息添加到列表头部
+            data.cls = [...messageData.newNews, ...data.cls];
+            data.lastUpdated = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        }
+    });
 };
 
 onBeforeMount(async () => {
     await RequestCollection.getClsData();
-    ws.connect(import.meta.env.VITE_WS_URL, getOrderMessage, true);
+    // 订阅WebSocket消息
+    subscribeToWebSocketMessages();
 });
 
 onMounted(() => {});
+
+// 组件卸载时取消订阅
+onBeforeUnmount(() => {
+    eventBus.off('cls_news_update');
+});
 defineExpose({
     ...toRefs(data),
 });
