@@ -8,6 +8,7 @@
         <section class="news">
             <RadioInputs v-model="newsType" name="news-type" :options="newsOptions" />
             <News v-if="newsType === 'telegraph'" />
+            <Sina7x24 v-if="newsType === 'sina'" />
         </section>
     </div>
 </template>
@@ -15,6 +16,7 @@
 <script setup>
 import AllQuotes from "./allQuotes.vue"; // 全指数
 import News from "./News.vue"; // 财联社
+import Sina7x24 from "./Sina7x24.vue"; // 新浪7x24
 import RadioInputs from "../../components/RadioInputs.vue";
 import { useTradeStore } from 'stores/trade'; // 状态管理 store
 import { getWebSocketService, heartbeatConfig } from 'utils/websocketService'; // WebSocket 服务
@@ -85,14 +87,14 @@ const getMarketDataMessage = (msg) => {
     if (msg === heartbeatConfig.message) return;
     // 处理接收到的消息
     const receiveMessages = JSON.parse(msg);
-    console.log('收到 WebSocket 消息11111111111111:', msg);
+    console.log('收到 WebSocket 消息:', msg);
 };
 
 // 新闻类型
 const newsType = ref('telegraph');
 const newsOptions = [
     { value: 'telegraph', label: '财联社电报' },
-    { value: 'company', label: '上市公司今日动态' }
+    { value: 'sina', label: '新浪7x24' }
 ];
 
 const { } = getCurrentInstance()?.proxy;

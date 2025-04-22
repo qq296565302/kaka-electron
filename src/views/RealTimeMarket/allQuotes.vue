@@ -9,7 +9,9 @@
 </template>
 
 <script setup>
-import eventBus from "utils/eventBus";
+import WebSocketService from '@zhaoshijun/ws-service';
+// 获取单例实例
+const ws = WebSocketService.getInstance();
 const PageName = 'AllQuotes';
 const { Service, Request, CRUD, Storage, $message } = getCurrentInstance()?.proxy;
 
@@ -19,27 +21,21 @@ Service.registerApi(PageName, {
     },
 });
 const quotes = ref([])
-// 订阅WebSocket消息
-const subscribeToWebSocketMessages = () => {
-    // 订阅cls_news_update类型的消息
-    eventBus.on('indexQuotes', (messageData) => {
-        console.log('收到全指数消息:', messageData);
-        quotes.value = messageData
-    });
-};
-
+// 订阅特定类型的消息
+const unsubscribe = ws.subscribe('indexQuotes', (payload, message) => {
+    quotes.value = message.data;
+});
+onBeforeUnmount(() => {
+    unsubscribe();
+});
 onBeforeMount(async () => {
-    // 订阅WebSocket消息
-    subscribeToWebSocketMessages();
     const result = await CRUD.launch(() => {
         return Service.fetch(PageName, undefined, 'indexQuotes');
     });
     quotes.value = result.data;
 });
 
-onBeforeUnmount(() => {
-    eventBus.off('indexQuotes');
-});
+
 </script>
 <style scoped lang="scss">
 .allQuotes {
