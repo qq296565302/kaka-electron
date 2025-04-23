@@ -63,8 +63,8 @@ function isInTradeTime(currentTimestamp) {
   
   // 判断是否在上午或下午的交易时段内
   return (
-    (currentTime.isAfter(morningStart) && currentTime.isBefore(morningEnd)) ||
-    (currentTime.isAfter(afternoonStart) && currentTime.isBefore(afternoonEnd))
+    (currentTime.isAfter(morningStart) && currentTime.isSameOrBefore(morningEnd)) ||
+    (currentTime.isSameOrAfter(afternoonStart) && currentTime.isBefore(afternoonEnd))
   );
 }
 
@@ -128,8 +128,11 @@ const updateServiceTime = () => {
   }
   
   // 步骤2：交易日内的时间状态判断
-  // 定义交易开始时间点（9:30）
+  // 定义当日的交易时间段
   const morningStart = currentTime.hour(9).minute(30).second(0);
+  const morningEnd = currentTime.hour(11).minute(30).second(0);
+  const afternoonStart = currentTime.hour(13).minute(0).second(0);
+  const afternoonEnd = currentTime.hour(15).minute(0).second(0);
   
   // 根据当前时间判断交易状态
   if (currentTime.isBefore(morningStart)) {
@@ -138,8 +141,13 @@ const updateServiceTime = () => {
   } else if (isInTradeTime(currentTimestamp)) {
     // 情况2：在交易时段内
     tradeStore.updateTradeStatus('1');
+  } else if (currentTime.isAfter(morningEnd) && currentTime.isBefore(afternoonStart)) {
+    // 情况3：中午休市时段(11:30-13:00)
+    tradeStore.updateTradeStatus('2');
+    // 获取并更新最近一次交易结束时间
+    tradeStore.updateLastTradeTime(morningEnd.format('YYYY-MM-DD HH:mm:ss'));
   } else {
-    // 情况3：交易日但不在交易时段（已收盘或中午休市）
+    // 情况4：交易日但不在交易时段（已收盘）
     tradeStore.updateTradeStatus('2');
     
     // 获取并更新最近一次交易结束时间
