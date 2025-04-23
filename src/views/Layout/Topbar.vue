@@ -25,72 +25,124 @@ const serviceTime = ref(''); // 当前服务时间字符串
 let timer = null; // 定时器句柄
 let currentTimestamp = null; // 当前服务时间戳（毫秒）
 
-// ====== 工具函数 ======
-// 获取距离当前日期最近且不晚于当前日期的交易日
+// ====== 交易时间相关工具函数 ======
+/**
+ * 获取距离当前日期最近且不晚于当前日期的交易日
+ * @param {number} currentTimestamp - 当前时间戳（毫秒）
+ * @param {Ref<string[]>} tradeCalendar - 交易日历数组的引用
+ * @returns {string|null} 最近交易日的日期字符串，格式为'YYYY-MM-DD'，如果没有找到则返回null
+ */
 function getNearestTradeDate(currentTimestamp, tradeCalendar) {
   const currentDateStr = dayjs(currentTimestamp).format('YYYY-MM-DD');
-  const pastTradeDates = tradeCalendar.value.filter(date => dayjs(date).isSameOrBefore(currentDateStr));
+  // 筛选出不晚于当前日期的所有交易日
+  const pastTradeDates = tradeCalendar.value.filter(date => 
+    dayjs(date).isSameOrBefore(currentDateStr)
+  );
+  
   if (pastTradeDates.length > 0) {
-    // 取最大（最接近当前日期）的日期
+    // 按日期降序排序并取第一个（最接近当前日期的交易日）
     return pastTradeDates.sort((a, b) => dayjs(b).diff(dayjs(a)))[0];
   }
   return null;
 }
 
-// 判断当前时间是否在交易时段（9:30-11:30 或 13:00-15:00）
+/**
+ * 判断当前时间是否在交易时段内
+ * A股交易时段：上午9:30-11:30，下午13:00-15:00
+ * @param {number} currentTimestamp - 当前时间戳（毫秒）
+ * @returns {boolean} 是否在交易时段内
+ */
 function isInTradeTime(currentTimestamp) {
   const currentTime = dayjs(currentTimestamp);
+  
+  // 定义当日的交易时间段
   const morningStart = currentTime.hour(9).minute(30).second(0);
   const morningEnd = currentTime.hour(11).minute(30).second(0);
   const afternoonStart = currentTime.hour(13).minute(0).second(0);
   const afternoonEnd = currentTime.hour(15).minute(0).second(0);
+  
+  // 判断是否在上午或下午的交易时段内
   return (
     (currentTime.isAfter(morningStart) && currentTime.isBefore(morningEnd)) ||
     (currentTime.isAfter(afternoonStart) && currentTime.isBefore(afternoonEnd))
   );
 }
 
-// 获取最近一次交易时段的结束时间（上午11:30或下午15:00，且不晚于当前时间）
+/**
+ * 获取最近一次交易时段的结束时间
+ * @param {number} currentTimestamp - 当前时间戳（毫秒）
+ * @returns {string|null} 最近一次交易结束时间，格式为'YYYY-MM-DD HH:mm:ss'，如果当前时间早于上午收盘时间则返回null
+ */
 function getLastTradeTime(currentTimestamp) {
   const currentDateStr = dayjs(currentTimestamp).format('YYYY-MM-DD');
-  const morningEnd = dayjs(`${currentDateStr} 11:30:00`);
-  const afternoonEnd = dayjs(`${currentDateStr} 15:00:00`);
+  const morningEnd = dayjs(`${currentDateStr} 11:30:00`); // 上午收盘时间
+  const afternoonEnd = dayjs(`${currentDateStr} 15:00:00`); // 下午收盘时间
+  
+  // 判断当前时间与收盘时间的关系
   if (dayjs(currentTimestamp).isAfter(afternoonEnd)) {
+    // 如果当前时间晚于下午收盘时间，返回下午收盘时间
     return afternoonEnd.format('YYYY-MM-DD HH:mm:ss');
   } else if (dayjs(currentTimestamp).isAfter(morningEnd)) {
+    // 如果当前时间晚于上午收盘时间但早于下午收盘时间，返回上午收盘时间
     return morningEnd.format('YYYY-MM-DD HH:mm:ss');
   }
-  return null;
+  return null; // 当前时间早于任何收盘时间
 }
 
 // ====== 主业务逻辑：更新时间和交易状态 ======
 /**
- * 1. 每秒更新时间 currentTimestamp 和 serviceTime
- * 2. 判断当前日期是否为交易日
- *    - 不是：查找最近的交易日并打印，交易状态设为0（休市）
- *    - 是：判断是否在交易时段
- *        - 在：交易状态设为1（开市）
- *        - 不在：交易状态设为2（已收盘），并打印最近一次交易时间
+ * 更新服务时间和交易状态的主函数
+ * 每秒执行一次，更新系统时间并根据当前时间判断交易状态
+ * 
+ * 交易状态逻辑：
+ * 1. 判断当前日期是否为交易日
+ *    - 不是交易日：状态设为'0'（今日休市），并更新最近交易日信息
+ *    - 是交易日：继续判断当前时间
+ * 
+ * 2. 对于交易日，根据时间判断具体状态：
+ *    - 早于9:30：状态设为'3'（未到开盘时间）
+ *    - 在交易时段内(9:30-11:30或13:00-15:00)：状态设为'1'（正在交易中）
+ *    - 其他时间：状态设为'2'（当日已收盘），并记录最近一次交易结束时间
  */
 const updateServiceTime = () => {
+  // 确保时间戳已初始化
   if (currentTimestamp === null) return;
+  
+  // 更新时间戳和显示时间（每秒+1000毫秒）
   currentTimestamp += 1000;
   serviceTime.value = dayjs(currentTimestamp).format('YYYY-MM-DD HH:mm:ss');
+  
+  // 获取当前日期字符串，用于判断是否为交易日
   const currentDateStr = dayjs(currentTimestamp).format('YYYY-MM-DD');
-  // 1. 判断是否为交易日
+  const currentTime = dayjs(currentTimestamp);
+  
+  // 步骤1：判断是否为交易日
   if (!tradeCalendar.value.includes(currentDateStr)) {
+    // 非交易日处理逻辑
     const nearestTradeDate = getNearestTradeDate(currentTimestamp, tradeCalendar);
     if (nearestTradeDate) {
       tradeStore.updateNearestTradeDate(nearestTradeDate);
     }
-    tradeStore.updateTradeStatus('0');
+    tradeStore.updateTradeStatus('0'); // 设置为休市状态
     return;
   }
-  // 2. 判断是否在交易时段
-  if (isInTradeTime(currentTimestamp)) {
+  
+  // 步骤2：交易日内的时间状态判断
+  // 定义交易开始时间点（9:30）
+  const morningStart = currentTime.hour(9).minute(30).second(0);
+  
+  // 根据当前时间判断交易状态
+  if (currentTime.isBefore(morningStart)) {
+    // 情况1：交易日但未到开盘时间
+    tradeStore.updateTradeStatus('3');
+  } else if (isInTradeTime(currentTimestamp)) {
+    // 情况2：在交易时段内
     tradeStore.updateTradeStatus('1');
   } else {
+    // 情况3：交易日但不在交易时段（已收盘或中午休市）
     tradeStore.updateTradeStatus('2');
+    
+    // 获取并更新最近一次交易结束时间
     const lastTradeTime = getLastTradeTime(currentTimestamp);
     if (lastTradeTime) {
       tradeStore.updateLastTradeTime(lastTradeTime);

@@ -28,6 +28,10 @@ const wsService = getWebSocketService('market');
 watch(() => tradeStore.tradeStatus, () => {
     const statusName = tradeStore.tradeStatusName;
     let alertText = '';
+    if (tradeStore.tradeStatus === '3') {
+        alertType.value = 'info';
+        alertText = `A股 ${statusName}`;
+    }
     if (tradeStore.tradeStatus === '2') {
         alertType.value = 'error';
         alertText = `A股 ${statusName}，最后交易时间：${tradeStore.lastTradeTime}`;

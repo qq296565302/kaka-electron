@@ -100,5 +100,5 @@ defineExpose({
 });
 </script>
 <style scoped lang="scss">
-@import "./scss/news.scss";
+@use "@/views/RealTimeMarket/scss/news.scss";
 </style>
