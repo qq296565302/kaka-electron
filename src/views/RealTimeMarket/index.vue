@@ -7,8 +7,8 @@
         </section>
         <section class="news">
             <RadioInputs v-model="newsType" name="news-type" :options="newsOptions" />
-            <News v-show="newsType === 'telegraph'" ref="newsComponent" />
-            <Sina7x24 v-show="newsType === 'sina'" ref="sinaComponent" />
+            <News v-if="newsType === 'telegraph'" ref="newsComponent" />
+            <Sina7x24 v-if="newsType === 'sina'" ref="sinaComponent" />
         </section>
     </div>
 </template>
