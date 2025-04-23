@@ -78,9 +78,9 @@ const copyText = async (text) => {
 // 订阅特定类型的消息
 const unsubscribe = ws.subscribe('cls_news_update', (payload, message) => {
     console.log('收到财联社消息更新:', message);
-    if (message && message.newNews) {
+    if (message.data && message.data.newNews) {
         // 将新消息添加到列表头部
-        data.cls = [...message.newNews, ...data.cls];
+        data.cls = [...message.data.newNews, ...data.cls];
         data.lastUpdated = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
     }
 });

@@ -19,11 +19,12 @@ import News from "./News.vue"; // 财联社
 import Sina7x24 from "./Sina7x24.vue"; // 新浪7x24
 import RadioInputs from "../../components/RadioInputs.vue";
 import { useTradeStore } from 'stores/trade'; // 状态管理 store
-import { getWebSocketService, heartbeatConfig } from 'utils/websocketService'; // WebSocket 服务
+import WebSocketService from '@zhaoshijun/ws-service';
 const tradeStore = useTradeStore(); // 获取交易状态 store
 const alertMessage = ref('');
 const alertType = ref('error');
-const wsService = getWebSocketService('market');
+
+const ws = WebSocketService.getInstance();
 
 watch(() => tradeStore.tradeStatus, () => {
     const statusName = tradeStore.tradeStatusName;
@@ -48,7 +49,7 @@ watch(() => tradeStore.tradeStatus, () => {
 
     // 获取 WebSocket 服务并发送状态变化消息
     try {
-        if (wsService.getStatus() === 1) { // 1 表示 WebSocket.OPEN
+        if (ws.getState() === 1) { // 1 表示 WebSocket.OPEN
             // 构建状态变化消息
             const statusMessage = JSON.stringify({
                 type: 'tradeStatusChange',
@@ -61,7 +62,7 @@ watch(() => tradeStore.tradeStatus, () => {
             });
 
             // 发送消息到服务端
-            wsService.sendMessage(statusMessage);
+            ws.send(statusMessage);
             console.log('已发送交易状态变化消息到服务端');
         } else {
             console.warn('WebSocket 连接未打开，无法发送交易状态变化消息');
