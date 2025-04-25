@@ -63,8 +63,8 @@ function isInTradeTime(currentTimestamp) {
   
   // 判断是否在上午或下午的交易时段内
   return (
-    (currentTime.isAfter(morningStart) && currentTime.isSameOrBefore(morningEnd)) ||
-    (currentTime.isSameOrAfter(afternoonStart) && currentTime.isBefore(afternoonEnd))
+    (currentTime.isAfter(morningStart) && currentTime.isBefore(morningEnd)) ||
+    (currentTime.isAfter(afternoonStart) && currentTime.isBefore(afternoonEnd))
   );
 }
 
@@ -138,8 +138,8 @@ const updateServiceTime = () => {
   if (currentTime.isBefore(morningStart)) {
     // 情况1：交易日但未到开盘时间
     tradeStore.updateTradeStatus('3');
-  } else if (isInTradeTime(currentTimestamp)) {
-    // 情况2：在交易时段内
+  } else if (isInTradeTime(currentTimestamp) || currentTime.isSame(afternoonStart)) {
+    // 情况2：在交易时段内（包括13:00整点）
     tradeStore.updateTradeStatus('1');
   } else if (currentTime.isAfter(morningEnd) && currentTime.isBefore(afternoonStart)) {
     // 情况3：中午休市时段(11:30-13:00)

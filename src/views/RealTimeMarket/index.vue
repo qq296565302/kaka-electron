@@ -4,6 +4,7 @@
             <el-alert class="alert" v-if="alertMessage" :title="alertMessage" :type="alertType" />
             <RadioInputs v-model="marketType" name="market-type" :options="marketOptions" />
             <AllQuotes v-if="marketType === 'all'" />
+            <ShangHai v-if="marketType === 'shanghai'" />
         </section>
         <section class="news">
             <RadioInputs v-model="newsType" name="news-type" :options="newsOptions" />
@@ -15,6 +16,7 @@
 
 <script setup>
 import AllQuotes from "./allQuotes.vue"; // 全指数
+import ShangHai from "./ShangHai.vue"; // 上海
 import News from "./News.vue"; // 财联社
 import Sina7x24 from "./Sina7x24.vue"; // 新浪7x24
 import RadioInputs from "../../components/RadioInputs.vue";
